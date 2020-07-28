@@ -1,0 +1,40 @@
+from urllib.request import urlopen as uReq
+from bs4 import BeautifulSoup as soup
+
+my_url = 'https://www.cars.com/for-sale/searchresults.action/?mdId=21655&mkId=28263&page=4&perPage=100&rd=99999&searchSource=PAGINATION&sort=relevance&stkTypId=28881&zc=99019'
+uClient = uReq(my_url)
+page_html = uClient.read()
+uClient.close()
+#html_parser
+page_soup = soup(page_html, 'html.parser')
+#grab each product
+containers = page_soup.findAll('div',{'class':'shop-srp-listings__inner'})
+len(containers)
+filename = 'model_s_400.csv'
+
+
+f = open(filename, 'w')
+headers ='car,condition,milage,extar_info\n'
+f.write(headers)
+for container in containers:
+  #name of car
+  name_of_car = container.findAll('h2',{'class':'listing-row__title'})
+  car = name_of_car[0].text.strip()
+  print(car)
+  #condition of car
+  condition_of_car = container.findAll('div',{'class':'listing-row__stocktype'})
+  condition = condition_of_car[0].text.strip()
+  print(condition)
+  #milage of car
+  milage_of_car = container.findAll('span',{'class':'listing-row__mileage'})
+  milage = milage_of_car[0].text.strip()
+  print(milage)
+  car_price = container.findAll('span',{'class':'listing-row__price'})
+  price = car_price[0].text.strip()
+  price_edit = price.replace('$','')
+  price = price_edit.replace(',','')
+  print(price)
+  car_information = container.findAll('ul', {'class':'listing-row__meta'})
+  car_info = car_information[0].text.strip().replace(' ','')
+  f.write(car+','+ condition +','+milage.replace(',','')+','+price+'\n')
+f.close()
